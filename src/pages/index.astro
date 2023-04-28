@@ -1,0 +1,73 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Guitarra from "../components/guitarra.astro";
+import Curso from "../components/curso.astro";
+import Post from "../components/post.astro";
+import ComponenteReact from "../components/componenteReact";
+
+const urlGuitarras = `${
+	import.meta.env.PUBLIC_API_URL
+}/guitarras?populate=imagen`;
+const urlPosts = `${import.meta.env.PUBLIC_API_URL}/posts?populate=imagen`;
+const urlCurso = `${import.meta.env.PUBLIC_API_URL}/curso?populate=imagen`;
+
+const [resGuitarras, resPosts, resCurso] = await Promise.all([
+	fetch(urlGuitarras),
+	fetch(urlPosts),
+	fetch(urlCurso),
+]);
+
+const [{ data: guitarras }, { data: posts }, { data: curso }] =
+	await Promise.all([resGuitarras.json(), resPosts.json(), resCurso.json()]);
+---
+
+<Layout
+	title="Welcome to Astro."
+	description="Página de tienda de instrumentos musicales, guitarras, cursos, blog y más"
+>
+	<main class="contenedor">
+		<ComponenteReact client:load />
+		<h1 class="heading">Nuestra Colección</h1>
+		<div class="grid">
+			{
+				guitarras?.map((guitarra) => (
+					<Guitarra
+						nombre={guitarra.attributes.nombre}
+						descripcion={guitarra.attributes.descripcion}
+						url={guitarra.attributes.url}
+						precio={guitarra.attributes.precio}
+						imagen={
+							guitarra.attributes.imagen.data.attributes.formats.medium.url
+						}
+					/>
+				))
+			}
+		</div>
+	</main>
+
+	<Curso
+		titulo={curso.attributes.titulo}
+		contenido={curso.attributes.contenido}
+		imagen={curso.attributes.imagen.data.attributes.url}
+	/>
+
+	<section class="contenedor">
+		<h1 class="heading">Nuestro Blog</h1>
+
+		<div class="grid">
+			{
+				posts?.map((post) => (
+					<Post
+						titulo={post.attributes.titulo}
+						contenido={post.attributes.contenido}
+						url={post.attributes.url}
+						publishedAt={post.attributes.publishedAt}
+						imagen={post.attributes.imagen.data.attributes.formats.medium.url}
+					/>
+				))
+			}
+		</div>
+	</section>
+</Layout>
+
+<style></style>
